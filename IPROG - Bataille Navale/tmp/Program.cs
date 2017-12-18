@@ -11,12 +11,11 @@ namespace tmp
         static void Main(string[] args)
         {
 
-            int[] tab = new int[4];
+            int i = 2;
 
-            for (int i = 0; i < 4; i++)
-            {
-                if (tab[i] == 1) Console.WriteLine(tab[i]);
-            }
+            string text = String.Format("{0}{0}", i);
+
+            Console.Write(text);
 
             Console.ReadKey();
 
