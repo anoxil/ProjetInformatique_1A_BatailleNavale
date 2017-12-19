@@ -11,11 +11,11 @@ namespace tmp
         static void Main(string[] args)
         {
 
-            int i = 2;
+            string text = "C";
 
-            string text = String.Format("{0}{0}", i);
+            int chiffre = (char)Convert.ToChar(text) - 65;
 
-            Console.Write(text);
+            Console.Write(chiffre);
 
             Console.ReadKey();
 
