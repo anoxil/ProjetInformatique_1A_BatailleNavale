@@ -10,24 +10,29 @@ namespace main
     {
         static void Main(string[] args)
         {
-            
+
             string[,] tabAdversaire = new string[10, 10];
             string[,] tabJoueur = new string[10, 10];
-            InitialiserJeu(tabJoueur, tabAdversaire);
+
+
+            //générer une grille pour l'adversaire et la sauvegarder
+            int[,] sauvegardeEmplacementAdversaire = InitialiserGrilleRemplie(tabAdversaire);
+            //générer une grille pour le joueur tant qu'il n'est pas satisfait et la sauvegarder
+            int[,] sauvegardeEmplacementJoueur = InitialiserJoueur(tabJoueur);
 
             Console.WriteLine("\n################");
             Console.WriteLine("# Début du jeu #");
             Console.WriteLine("################");
 
-            bool victoire = false;
+            bool victoireJoueur = false;
 
-            while (!victoire)
+            while (!victoireJoueur)
             {
                 /*ENSEIGNANT : décommenter la ligne suivante pour avoir accès à la grille
                  *  de l'adversaire avec les bateaux affichés */
-                AfficherGrille(tabAdversaire); 
-                //AfficherGrilleAdversaire(tabAdversaire);
-                victoire = TourJoueur(tabAdversaire);
+                //AfficherGrille(tabAdversaire);
+                AfficherGrilleCachee(tabAdversaire);
+                victoireJoueur = TourJoueur(tabAdversaire, sauvegardeEmplacementAdversaire);
             }
 
             Console.WriteLine("\nVICTOIRE !");
@@ -36,17 +41,21 @@ namespace main
 
         }
 
+        /* TO DO:
+         *  - fonction basique d'attaque aléatoire de l'adversaire
+         *  - fonction avancee d'attaque de proche en proche de l'adversaire
+         *  - fonction de sauvegarde en cours de partie
+         * */
 
-        public static void InitialiserJeu(string[,] tabJoueur, string[,] tabAdversaire)
+
+        public static int[,] InitialiserJoueur(string[,] tabJoueur)
         {
-            //générer une grille pour l'adversaire
-            InitialiserGrilleRemplie(tabAdversaire);
+            int[,] sauvegardeEmplacement;
 
-            //générer une grille pour le joueur tant qu'il n'est pas satisfait
             char happyCustomer = 'n';
             do
             {
-                InitialiserGrilleRemplie(tabJoueur);
+                sauvegardeEmplacement = InitialiserGrilleRemplie(tabJoueur);
                 AfficherGrille(tabJoueur);
 
                 Console.Write("Souhaitez-vous garder ce placement (o/n) ? ");
@@ -59,6 +68,7 @@ namespace main
                 }
             } while (happyCustomer == 'n');
 
+            return sauvegardeEmplacement;
         }
 
         public static void AfficherGrille(string[,] tab)
@@ -81,7 +91,7 @@ namespace main
             Console.WriteLine("+--+--+--+--+--+--+--+--+--+--+\n\n");
         }
 
-        public static void AfficherGrilleAdversaire(string[,] tab)
+        public static void AfficherGrilleCachee(string[,] tab)
         {
             Console.Write("  A  B  C  D  E  F  G  H  I  J\n");
             for (int i = 0; i < tab.GetLength(0); i++)
@@ -120,18 +130,23 @@ namespace main
             }
         }
 
-        public static void InitialiserGrilleRemplie(string[,] tab)
+        public static int[,] InitialiserGrilleRemplie(string[,] tab)
         {
+            int[,] sauvegardeEmplacement = new int[5, 5]; //chaque ligne = un bateau, colonne1 = ligne, colonne2 = colonne, colonne3 = orientation, colonne4 = taille, 
 
             InitialiserGrilleVide(tab);
-            PlacerBateau(5, tab);
-            PlacerBateau(4, tab);
-            PlacerBateau(3, tab); PlacerBateau(3, tab);
-            PlacerBateau(2, tab);
+            for (int i = 0; i < 4; i++)
+            {
+                //on place le bateau sur la grille de l'adversaire et enregistre ses coordonnées;
+                sauvegardeEmplacement = SauvegarderEmplacement( PlacerBateau((i + 2), tab), sauvegardeEmplacement, i);
+            }
+            sauvegardeEmplacement = SauvegarderEmplacement(PlacerBateau(3, tab), sauvegardeEmplacement, 4); //on place deux fois le bateau à 3 cases donc on le rappelle ici
+
+            return sauvegardeEmplacement;
 
         }
 
-        public static void PlacerBateau(int taille, string[,] tab)
+        public static int[] PlacerBateau(int taille, string[,] tab)
         {
             Random r = new Random();
             int ligne = 0;
@@ -158,6 +173,10 @@ namespace main
 
             //on remplit les cases du tableau pour marquer le bateau
             RemplirEmplacement(ligne, colonne, choixOrientation, taille, tab);
+
+            //on garde les coordonnées d'emplacement pour pouvoir vérifier si les bateaux sont toujours à flot plus tard
+            int[] emplacement = { ligne, colonne, choixOrientation, taille };
+            return emplacement;
 
         }
 
@@ -276,33 +295,39 @@ namespace main
 
         }
 
-        
-
-
-        public static bool TourJoueur(string[,] tabOpposant)
+        public static int[,] SauvegarderEmplacement(int[] emplacement, int[,] sauvegarde, int rang)
         {
-            int nbBateauxAdversairesRestants = 0; //pour calculer le nb de salves restantes
-            int nbSalves = 5 - nbBateauxAdversairesRestants; //nb de salves qu'un joueur a au début de son tour
-            string ligneVisee = ""; string colonneVisee = "";
+            for (int j = 0; j < 4; j++)
+            {
+                sauvegarde[rang, j] = emplacement[j];
+            }
+
+            return sauvegarde;
+        }
+
+
+
+
+        public static bool TourJoueur(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        {
+            int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
             int coupsRestants;
             int[] caseVisee = new int[2]; //colonne et ligne choisies
-
-            //BateauxAdversairesRestants();
 
             for (int coups = 0; coups < nbSalves; coups++)
             {
                 coupsRestants = nbSalves - coups;
-                caseVisee = CaseVisee(ligneVisee, colonneVisee, coupsRestants);
+                caseVisee = CaseVisee(coupsRestants);
 
 
-                //ATTAQUE VERS ADVERSAIRE
+                //Attaque vers adversaire
                 //caractère de croix à mettre quand on touche un morceau de bâteau.
                 if ((tabOpposant[caseVisee[0], caseVisee[1]] == "22")
                     || (tabOpposant[caseVisee[0], caseVisee[1]] == "33")
                     || (tabOpposant[caseVisee[0], caseVisee[1]] == "44")
                     || (tabOpposant[caseVisee[0], caseVisee[1]] == "55"))
                 {
-                    tabOpposant[caseVisee[0], caseVisee[1]] = "><"; 
+                    tabOpposant[caseVisee[0], caseVisee[1]] = "><";
                 }
             }
 
@@ -310,23 +335,20 @@ namespace main
 
         }
 
-        public static int[] CaseVisee (string colonneVisee, string ligneVisee, int coupsRestants)
+        public static int[] CaseVisee(int coupsRestants)
         {
-            //Demande la colonne puis la ligne visées par le joueur en vérifiant que les entrées sont correctes.
-            Console.Write("\nIl vous reste {0} coup(s). Écrivez la colonne que vous visez : ", coupsRestants);
-            colonneVisee = Console.ReadLine();
-            while (!colonneCorrectementNommee(colonneVisee))
-            {
-                Console.Write("Erreur dans la lecture de la case ciblée, veuillez écrire une lettre entre A et J : ");
-                colonneVisee = Console.ReadLine();
-            }
 
-            Console.Write("Écrivez la ligne que vous visez : ");
-            ligneVisee = Console.ReadLine();
-            while (!ligneCorrectementNommee(ligneVisee))
+            Console.Write("\nIl vous reste {0} coup(s). Écrivez la case que vous visez (ColonneLigne) : ", coupsRestants);
+            string caseVisee = Console.ReadLine();
+            //on récupère le premier caractère pour la colonne, le restant des caractères pour le nombre (simple ou double chiffre)
+            string colonneVisee = caseVisee.Substring(0, 1), ligneVisee = caseVisee.Substring(1);
+
+            //on gère les erreurs de frappe et valeurs hors champs
+            while (!colonneCorrectementNommee(colonneVisee) || !ligneCorrectementNommee(ligneVisee))
             {
-                Console.Write("Erreur dans la lecture de la case ciblée, veuillez écrire un nombre entre 1 et 10 : ");
-                ligneVisee = Console.ReadLine();
+                Console.Write("Erreur dans la lecture de la case ciblée, veuillez recommencer : ");
+                caseVisee = Console.ReadLine();
+                colonneVisee = caseVisee.Substring(0, 1); ligneVisee = caseVisee.Substring(1);
             }
 
             //Conversion des entrées en valeurs utilisables pour interagir avec le tableau de l'opposant
@@ -357,15 +379,60 @@ namespace main
             {
                 ligneVisee = Convert.ToInt32(ligne);
             }
-            catch(FormatException) { return false; }
+            catch (FormatException) { return false; }
 
             for (int i = 0; i < 10; i++)
             {
-                if (ligneVisee == (i+1))
+                if (ligneVisee == (i + 1))
                     return true;
             }
 
             return false;
+        }
+
+        public static int BateauxRestants(string[,] tabBateaux, int[,] sauvegarde)
+        {
+            //ici, sauvegarde = {ligne, colonne, choixOrientation, taille}
+            int compteurBateauxRestants = 5;
+            int compteurEtatBateau;
+
+            for (int i = 0; i < 5; i++) //on parcourt les 5 bateaux enregistrés
+            {
+                compteurEtatBateau = sauvegarde[i, 3]; //le bateau a [taille] points de vie
+
+                for (int k = 0; k < sauvegarde[i, 3]; k++) //on parcourt la taille (sauvegarde[i, 3]) du bateau i
+                {
+                    //on explore différemment selon orientation
+                    if ( ((sauvegarde[i, 2]) == 0) //nord
+                        //on compare la (position d'origine + déplacement de k cases dans la bonne orientation) à une case qui serait attaquée
+                        && (tabBateaux[sauvegarde[i, 0] - k, sauvegarde[i, 1]] == "><" ) )
+                    {
+                        compteurEtatBateau--; //donc on enlève un point de vie au bateau si on trouve une case attaquée
+                    }
+                    else if ( ((sauvegarde[i, 2]) == 1) //sud
+                        && (tabBateaux[sauvegarde[i, 0] + k, sauvegarde[i, 1]] != Convert.ToString(sauvegarde[i, 3] * 11)) )
+                    {
+                        compteurEtatBateau--;
+                    }
+                    else if ( ((sauvegarde[i, 2]) == 2) //ouest
+                        && (tabBateaux[sauvegarde[i, 0], sauvegarde[i, 1] - k] != Convert.ToString(sauvegarde[i, 3] * 11)) )
+                    {
+                        compteurEtatBateau--;
+                    }
+                    else if ( ((sauvegarde[i, 2]) == 3) //est
+                        && (tabBateaux[sauvegarde[i, 0], sauvegarde[i, 1] + k] != Convert.ToString(sauvegarde[i, 3] * 11)) )
+                    {
+                        compteurEtatBateau--;
+                    }
+                    
+                }
+
+                if (compteurEtatBateau == 0) //si le bateau que l'on vient d'étudier n'a plus de case en vie, on le supprime des bateaux restants
+                    compteurBateauxRestants--;
+
+            }
+
+            return compteurBateauxRestants;
         }
 
         public static bool Gagner(string[,] tab)
