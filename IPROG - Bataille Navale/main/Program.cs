@@ -14,7 +14,6 @@ namespace main
             string[,] tabAdversaire = new string[10, 10];
             string[,] tabJoueur = new string[10, 10];
 
-
             //générer une grille pour l'adversaire et la sauvegarder
             int[,] sauvegardeEmplacementAdversaire = InitialiserGrilleRemplie(tabAdversaire);
             //générer une grille pour le joueur tant qu'il n'est pas satisfait et la sauvegarder
@@ -24,15 +23,22 @@ namespace main
             Console.WriteLine("# Début du jeu #");
             Console.WriteLine("################");
 
-            bool victoireJoueur = false;
+            bool victoireJoueur = false, victoireAdversaire = false;
+            int difficulte = 0;
 
-            while (!victoireJoueur)
+            while (!victoireJoueur && !victoireAdversaire)
             {
                 /*ENSEIGNANT : décommenter la ligne suivante pour avoir accès à la grille
                  *  de l'adversaire avec les bateaux affichés */
                 //AfficherGrille(tabAdversaire);
-                AfficherGrilleCachee(tabAdversaire);
-                victoireJoueur = TourJoueur(tabAdversaire, sauvegardeEmplacementAdversaire);
+                //AfficherGrilleCachee(tabAdversaire);
+                //victoireJoueur = TourJoueur(tabAdversaire, sauvegardeEmplacementAdversaire);
+
+                if (difficulte == 0)
+                    victoireAdversaire = TourAdversaireFacile(tabJoueur, sauvegardeEmplacementJoueur);
+                else if (difficulte == 1)
+                    victoireAdversaire = TourAdversaireDifficile(tabJoueur, sauvegardeEmplacementJoueur);
+
             }
 
             Console.WriteLine("\nVICTOIRE !");
@@ -42,12 +48,12 @@ namespace main
         }
 
         /* TO DO:
-         *  - fonction basique d'attaque aléatoire de l'adversaire
          *  - fonction avancee d'attaque de proche en proche de l'adversaire
          *  - fonction de sauvegarde en cours de partie
          * */
+         
 
-
+        //PARTIE INITIALISATION DU JEU ET DES DONNEES//
         public static int[,] InitialiserJoueur(string[,] tabJoueur)
         {
             int[,] sauvegardeEmplacement;
@@ -307,17 +313,16 @@ namespace main
 
 
 
-
+        //PARTIE JEU//
         public static bool TourJoueur(string[,] tabOpposant, int[,] sauvegardeEmplacement)
         {
             int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
             int coupsRestants;
-            int[] caseVisee = new int[2]; //colonne et ligne choisies
 
             for (int coups = 0; coups < nbSalves; coups++)
             {
                 coupsRestants = nbSalves - coups;
-                caseVisee = CaseVisee(coupsRestants);
+                int[] caseVisee = CaseVisee(coupsRestants); //colonne et ligne choisies
 
 
                 //Attaque vers adversaire
@@ -333,6 +338,66 @@ namespace main
 
             return Gagner(tabOpposant);
 
+        }
+
+        public static bool TourAdversaireFacile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        //Tir totalement aléatoire, sans rappel des tirs précédents.
+        {
+            Random r = new Random();
+
+            int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
+            int coupsRestants;
+
+            Console.WriteLine(nbSalves);
+
+            for (int coups = 0; coups < nbSalves; coups++)
+            {
+                coupsRestants = nbSalves - coups;
+                int[] caseVisee = { r.Next(0, 10), r.Next(0, 10) };
+
+                //Attaque vers adversaire
+                //caractère de croix à mettre quand on touche un morceau de bâteau.
+                if ((tabOpposant[caseVisee[0], caseVisee[1]] == "22")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "33")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "44")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "55"))
+                {
+                    tabOpposant[caseVisee[0], caseVisee[1]] = "><";
+                }
+            }
+
+            return Gagner(tabOpposant);
+        }
+
+        public static bool TourAdversaireDifficile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        //Tir proche de zones correctement attaquées, avec rappel de tirs précédents.
+        {
+            Random r = new Random();
+
+            int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
+            int coupsRestants;
+
+            Console.WriteLine(nbSalves);
+
+            for (int coups = 0; coups < nbSalves; coups++)
+            {
+                coupsRestants = nbSalves - coups;
+                int[] caseVisee = { r.Next(0, 10), r.Next(0, 10) };
+
+                //Attaque vers adversaire
+                //caractère de croix à mettre quand on touche un morceau de bâteau.
+                if ((tabOpposant[caseVisee[0], caseVisee[1]] == "22")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "33")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "44")
+                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "55"))
+                {
+                    tabOpposant[caseVisee[0], caseVisee[1]] = "><";
+                }
+            }
+
+            return Gagner(tabOpposant);
+
+            return Gagner(tabOpposant);
         }
 
         public static int[] CaseVisee(int coupsRestants)
@@ -453,6 +518,7 @@ namespace main
             //si rien trouvé dans le bateau, gagne
             return true;
         }
+
 
     }
 }
