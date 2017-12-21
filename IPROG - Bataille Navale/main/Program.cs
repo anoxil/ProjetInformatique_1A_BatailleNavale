@@ -327,13 +327,13 @@ namespace main
             int coupsRestants;
             string contenuCaseVisee;
 
-            int[] bonCoup = { -1, -1 }; //permet de retenir la case correctement visée pour l'IA difficile
+            int[] bonCoupTourSuivant = { -1, -1 }; //permet de retenir la case correctement visée pour l'IA difficile
 
             for (int coups = 0; coups < nbSalves; coups++)
             {
                 coupsRestants = nbSalves - coups;
                 //colonne et ligne choisies
-                int[] caseVisee = CaseVisee(coupsRestants, joueur, difficulte, bonCoup);
+                int[] caseVisee = CaseVisee(coupsRestants, joueur, difficulte, bonCoupTourSuivant);
 
                 //Attaque vers adversaire
                 //caractère de croix '><' à mettre quand on touche un morceau de bâteau.
@@ -346,17 +346,17 @@ namespace main
                     tabOpposant[caseVisee[0], caseVisee[1]] = "><";
                     if ((joueur == 1) && (difficulte == 1))
                     {
-                        bonCoup[0] = caseVisee[0];
-                        bonCoup[1] = caseVisee[1];
+                        bonCoupTourSuivant[0] = caseVisee[0];
+                        bonCoupTourSuivant[1] = caseVisee[1];
                     }
-                    //enregistrer case attaquée correcte dans var temporaire si c'est l'IA
-                    foreach (int a in bonCoup)
+
+                    foreach (int a in bonCoupTourSuivant)
                         Console.Write(a + ", ");
                 }
                 else if ((joueur == 1) && (difficulte == 1))
                 //sinon, mettre la var temporaire en -1, -1
                 {
-                    bonCoup[0] = -1; bonCoup[1] = -1;
+                    bonCoupTourSuivant[0] = -1; bonCoupTourSuivant[1] = -1;
                 }
 
             }
@@ -365,8 +365,7 @@ namespace main
 
         }
 
-        /*
-        public static bool TourAdversaireFacile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        /* public static bool TourAdversaireFacile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
         //Tir totalement aléatoire, sans rappel des tirs précédents.
         {
             Random r = new Random();
@@ -474,7 +473,6 @@ namespace main
                 if (bonCoup[0] == -1)
                 { int[] choixIA = { r.Next(0, 10), r.Next(0, 10) }; Console.WriteLine("pas bon coup"); return choixIA; }
                 else
-                //random direction (en pensant au indexoutofrange) puis la viser
                 {
                     int ligne = 0; int colonne = 0;
                     do
@@ -505,7 +503,7 @@ namespace main
             string colonneVisee = caseVisee.Substring(0, 1), ligneVisee = caseVisee.Substring(1);
 
             //on gère les erreurs de frappe et valeurs hors champs
-            while (!colonneCorrectementNommee(colonneVisee) || !ligneCorrectementNommee(ligneVisee))
+            while (!ColonneCorrectementNommee(colonneVisee) || !LigneCorrectementNommee(ligneVisee))
             {
                 Console.Write("Erreur dans la lecture de la case ciblée, veuillez recommencer : ");
                 caseVisee = Console.ReadLine();
@@ -518,7 +516,7 @@ namespace main
             return choix;
         }
 
-        public static bool colonneCorrectementNommee(string colonne)
+        public static bool ColonneCorrectementNommee(string colonne)
         {
             string[] lettres = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" };
 
@@ -531,7 +529,7 @@ namespace main
             return false;
         }
 
-        public static bool ligneCorrectementNommee(string ligne)
+        public static bool LigneCorrectementNommee(string ligne)
         {
             int ligneVisee;
 
