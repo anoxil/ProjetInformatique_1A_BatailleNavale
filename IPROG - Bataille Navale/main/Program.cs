@@ -23,22 +23,28 @@ namespace main
             Console.WriteLine("# Début du jeu #");
             Console.WriteLine("################");
 
+            //joueur = 0, ia = 1
             bool victoireJoueur = false, victoireAdversaire = false;
-            int difficulte = 0;
+            int difficulte = 1;
 
             while (!victoireJoueur && !victoireAdversaire)
             {
                 /*ENSEIGNANT : décommenter la ligne suivante pour avoir accès à la grille
                  *  de l'adversaire avec les bateaux affichés */
                 //AfficherGrille(tabAdversaire);
-                //AfficherGrilleCachee(tabAdversaire);
-                //victoireJoueur = TourJoueur(tabAdversaire, sauvegardeEmplacementAdversaire);
 
+                //Console.WriteLine("Votre grille"); AfficherGrille(tabJoueur);
+                //Console.WriteLine("La grille de l'adversaire"); xAfficherGrilleCachee(tabAdversaire);
+                //victoireJoueur = TourDeJeu(tabAdversaire, sauvegardeEmplacementAdversaire, 0, difficulte);
+
+
+                AfficherGrille(tabJoueur);
+                AfficherGrilleCachee(tabJoueur);
                 if (difficulte == 0)
-                    victoireAdversaire = TourAdversaireFacile(tabJoueur, sauvegardeEmplacementJoueur);
+                    victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 0);
                 else if (difficulte == 1)
-                    victoireAdversaire = TourAdversaireDifficile(tabJoueur, sauvegardeEmplacementJoueur);
-
+                    victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 1);
+                Console.ReadKey();
             }
 
             Console.WriteLine("\nVICTOIRE !");
@@ -314,32 +320,52 @@ namespace main
 
 
         //PARTIE JEU//
-        public static bool TourJoueur(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        public static bool TourDeJeu(string[,] tabOpposant, int[,] sauvegardeEmplacement, int joueur, int difficulte)
         {
+
             int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
             int coupsRestants;
+            string contenuCaseVisee;
+
+            int[] bonCoup = { -1, -1 }; //permet de retenir la case correctement visée pour l'IA difficile
 
             for (int coups = 0; coups < nbSalves; coups++)
             {
                 coupsRestants = nbSalves - coups;
-                int[] caseVisee = CaseVisee(coupsRestants); //colonne et ligne choisies
-
+                //colonne et ligne choisies
+                int[] caseVisee = CaseVisee(coupsRestants, joueur, difficulte, bonCoup);
 
                 //Attaque vers adversaire
-                //caractère de croix à mettre quand on touche un morceau de bâteau.
-                if ((tabOpposant[caseVisee[0], caseVisee[1]] == "22")
-                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "33")
-                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "44")
-                    || (tabOpposant[caseVisee[0], caseVisee[1]] == "55"))
+                //caractère de croix '><' à mettre quand on touche un morceau de bâteau.
+                contenuCaseVisee = tabOpposant[caseVisee[0], caseVisee[1]];
+                if ((contenuCaseVisee == "22")
+                    || (contenuCaseVisee == "33")
+                    || (contenuCaseVisee == "44")
+                    || (contenuCaseVisee == "55"))
                 {
                     tabOpposant[caseVisee[0], caseVisee[1]] = "><";
+                    if ((joueur == 1) && (difficulte == 1))
+                    {
+                        bonCoup[0] = caseVisee[0];
+                        bonCoup[1] = caseVisee[1];
+                    }
+                    //enregistrer case attaquée correcte dans var temporaire si c'est l'IA
+                    foreach (int a in bonCoup)
+                        Console.Write(a + ", ");
                 }
+                else if ((joueur == 1) && (difficulte == 1))
+                //sinon, mettre la var temporaire en -1, -1
+                {
+                    bonCoup[0] = -1; bonCoup[1] = -1;
+                }
+
             }
 
             return Gagner(tabOpposant);
 
         }
 
+        /*
         public static bool TourAdversaireFacile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
         //Tir totalement aléatoire, sans rappel des tirs précédents.
         {
@@ -368,21 +394,48 @@ namespace main
 
             return Gagner(tabOpposant);
         }
+        */
 
-        public static bool TourAdversaireDifficile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
+        /*public static bool TourAdversaireDifficile(string[,] tabOpposant, int[,] sauvegardeEmplacement)
         //Tir proche de zones correctement attaquées, avec rappel de tirs précédents.
         {
-            Random r = new Random();
+            
 
             int nbSalves = BateauxRestants(tabOpposant, sauvegardeEmplacement); //pour calculer le nb de salves restantes
             int coupsRestants;
+
+            int[] bonCoup = { -1, -1 };
 
             Console.WriteLine(nbSalves);
 
             for (int coups = 0; coups < nbSalves; coups++)
             {
                 coupsRestants = nbSalves - coups;
-                int[] caseVisee = { r.Next(0, 10), r.Next(0, 10) };
+
+                Random r = new Random();
+                if (bonCoup[0] == -1)
+                { int[] caseVisee = { r.Next(0, 10), r.Next(0, 10) }; Console.WriteLine("pas bon coup"); }
+                else
+                //random direction (en pensant au indexoutofrange) puis la viser
+                {
+                    do {
+                        int orientation = r.Next(0, 4);
+                        if (orientation == 0) //nord
+                        { int[] caseVisee = { bonCoup[0] - 1, bonCoup[1] }; }
+                        else if (orientation == 1) //sud
+                        { int[] caseVisee = { bonCoup[0] + 1, bonCoup[1] }; }
+                        else if (orientation == 2) //ouest
+                        { int[] caseVisee = { bonCoup[0], bonCoup[1] - 1 }; }
+                        else if (orientation == 3) //est
+                        { int[] caseVisee = { bonCoup[0], bonCoup[1] + 1 }; }
+                    } while ((caseVisee[0] > 9) || (caseVisee [0] < 0) || (caseVisee[1] > 9) || (caseVisee[1] < 0));
+                    Console.WriteLine("bon coup"); }
+
+
+
+
+
+
 
                 //Attaque vers adversaire
                 //caractère de croix à mettre quand on touche un morceau de bâteau.
@@ -392,16 +445,59 @@ namespace main
                     || (tabOpposant[caseVisee[0], caseVisee[1]] == "55"))
                 {
                     tabOpposant[caseVisee[0], caseVisee[1]] = "><";
+                    bonCoup[0] = caseVisee[0]; bonCoup[1] = caseVisee[1];
+                    //enregistrer case attaquée correcte dans var temporaire
+                }
+                else
+                //sinon, vider var temporaire ou alors la mettre en -1, -1
+                {
+                    bonCoup[0] = -1; bonCoup[1] = -1;
                 }
             }
 
             return Gagner(tabOpposant);
+        }*/
 
-            return Gagner(tabOpposant);
-        }
-
-        public static int[] CaseVisee(int coupsRestants)
+        public static int[] CaseVisee(int coupsRestants, int joueur, int difficulte, int[] bonCoup)
         {
+            Random r = new Random();
+
+            if ((joueur == 1) && (difficulte == 0)) //SI c'est le tour de l'IA au niveau facile
+            {
+                int[] choixIA = { r.Next(0, 10), r.Next(0, 10) };
+                Console.WriteLine("ia facile");
+                return choixIA;
+            }
+            else if ((joueur == 1) && (difficulte == 1)) //SI c'est le tour de l'IA au niveau difficile
+            {
+                Console.WriteLine("ia difficile");
+                if (bonCoup[0] == -1)
+                { int[] choixIA = { r.Next(0, 10), r.Next(0, 10) }; Console.WriteLine("pas bon coup"); return choixIA; }
+                else
+                //random direction (en pensant au indexoutofrange) puis la viser
+                {
+                    int ligne = 0; int colonne = 0;
+                    do
+                    {
+                        int orientation = r.Next(0, 4);
+                        if (orientation == 0) //nord
+                        { ligne = bonCoup[0] - 1; colonne = bonCoup[1]; }
+                        else if (orientation == 1) //sud
+                        { ligne = bonCoup[0] + 1; colonne = bonCoup[1]; }
+                        else if (orientation == 2) //ouest
+                        { ligne = bonCoup[0]; colonne = bonCoup[1] - 1; }
+                        else if (orientation == 3) //est
+                        { ligne = bonCoup[0]; colonne = bonCoup[1] + 1; }
+                    } while ((ligne > 9) || (ligne < 0) || (colonne > 9) || (colonne < 0));
+                    Console.WriteLine("bon coup");
+
+                    int[] choixIA = { ligne, colonne };
+                    return choixIA;
+                }
+            }
+
+
+            //SINON ça veut dire joueur = 0 donc c'est le tour du joueur :
 
             Console.Write("\nIl vous reste {0} coup(s). Écrivez la case que vous visez (ColonneLigne) : ", coupsRestants);
             string caseVisee = Console.ReadLine();
@@ -419,7 +515,6 @@ namespace main
             //Conversion des entrées en valeurs utilisables pour interagir avec le tableau de l'opposant
             //Premier élément = ligne (décrémentation), Deuxième élément = colonne (conversion ASCII)
             int[] choix = { (Convert.ToInt32(ligneVisee) - 1), ((char)Convert.ToChar(colonneVisee) - 65) };
-
             return choix;
         }
 

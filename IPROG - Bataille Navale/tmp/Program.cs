@@ -11,11 +11,6 @@ namespace tmp
         static void Main(string[] args)
         {
 
-            string text = "C";
-
-            int chiffre = (char)Convert.ToChar(text) - 65;
-
-            Console.Write(chiffre);
 
             Console.ReadKey();
 
