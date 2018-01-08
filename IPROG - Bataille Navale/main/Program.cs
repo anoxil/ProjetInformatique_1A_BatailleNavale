@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,7 +27,6 @@ namespace main
             //joueur = 0, ia = 1
             bool victoireJoueur = false, victoireAdversaire = false;
             int difficulte = 1;
-            int[] bonCoup = new int[2];
 
             while (!victoireJoueur && !victoireAdversaire)
             {
@@ -35,6 +35,9 @@ namespace main
                 //AfficherGrille(tabAdversaire);
 
                 AfficherPlateauDeJeu(tabJoueur, tabAdversaire);
+                Console.Write("Souhaitez-vous sauvegarder et quitter (O/N) ? "); string save = Console.ReadLine();
+                if (save == "O") SauvegarderJeu(tabJoueur, tabAdversaire, sauvegardeEmplacementJoueur, sauvegardeEmplacementAdversaire, difficulte);
+
                 victoireJoueur = TourDeJeu(tabAdversaire, sauvegardeEmplacementAdversaire, 0, difficulte);
                 if (victoireJoueur) break;
 
@@ -42,6 +45,8 @@ namespace main
                     victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 0);
                 else if (difficulte == 1)
                     victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 1);
+
+                SauvegarderJeu(tabJoueur, tabAdversaire, sauvegardeEmplacementAdversaire, sauvegardeEmplacementJoueur, difficulte);
             }
 
             if (victoireJoueur) Console.WriteLine("\nVictoire du joueur.");
@@ -575,6 +580,98 @@ namespace main
 
             //si rien trouvé dans le bateau, gagne
             return true;
+        }
+
+        public static void SauvegarderJeu(string [,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire, int difficulte)
+        {
+            StreamWriter sw = new StreamWriter("data_save.txt");
+
+            //écrire tabJoueur
+            for (int ligneJ = 0; ligneJ < 10; ligneJ++)
+            {
+                for (int colonneJ = 0; colonneJ < 10; colonneJ++)
+                {
+                    sw.WriteLine(tabJoueur[ligneJ, colonneJ]);
+                }
+            }
+
+            //écrire tabAdversaire
+            for (int ligneA = 0; ligneA < 10; ligneA++)
+            {
+                for (int colonneA = 0; colonneA < 10; colonneA++)
+                {
+                    sw.WriteLine(tabAdversaire[ligneA, colonneA]);
+                }
+            }
+
+            //écrire emplacements joueur
+            for (int bateauJ = 0; bateauJ < 5; bateauJ++)
+            {
+                for (int donneeJ = 0; donneeJ < 4; donneeJ++)
+                {
+                    sw.WriteLine(sauvegardeEmplacementJoueur[bateauJ, donneeJ]);
+                }
+            }
+
+            //écrire emplacements adversaire
+            for (int bateauA = 0; bateauA < 5; bateauA++)
+            {
+                for (int donneeA = 0; donneeA < 4; donneeA++)
+                {
+                    sw.WriteLine(sauvegardeEmplacementAdversaire[bateauA, donneeA]);
+                }
+            }
+
+            //récup difficulté
+            sw.WriteLine(difficulte);
+
+            sw.Close();
+        }
+
+        public static void RecupererJeu(string[,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire, int difficulte)
+        {
+            StreamReader sr = new StreamReader("data_save.txt");
+
+            //récup tabJoueur
+            for (int ligneJ = 0; ligneJ < 10; ligneJ++)
+            {
+                for (int colonneJ = 0; colonneJ < 10; colonneJ++)
+                {
+                    tabJoueur[ligneJ, colonneJ] = sr.ReadLine();
+                }
+            }
+
+            //récup tabAdversaire
+            for (int ligneA = 0; ligneA < 10; ligneA++)
+            {
+                for (int colonneA = 0; colonneA < 10; colonneA++)
+                {
+                    tabAdversaire[ligneA, colonneA] = sr.ReadLine();
+                }
+            }
+
+            //récup emplacements joueur
+            for (int bateauJ = 0; bateauJ < 5; bateauJ++)
+            {
+                for (int donneeJ = 0; donneeJ < 4; donneeJ++)
+                {
+                    sauvegardeEmplacementJoueur[bateauJ, donneeJ] = Convert.ToInt32(sr.ReadLine());
+                }
+            }
+
+            //récup emplacements adversaire
+            for (int bateauA = 0; bateauA < 5; bateauA++)
+            {
+                for (int donneeA = 0; donneeA < 4; donneeA++)
+                {
+                    sauvegardeEmplacementAdversaire[bateauA, donneeA] = Convert.ToInt32(sr.ReadLine());
+                }
+            }
+
+            //récup difficulté
+            sr.ReadLine();
+
+            sr.Close();
         }
 
 
