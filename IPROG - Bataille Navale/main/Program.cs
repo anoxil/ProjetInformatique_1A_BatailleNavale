@@ -12,6 +12,10 @@ namespace main
         static void Main(string[] args)
         {
 
+            int choix = 3;
+            while (choix == 3)
+                choix = MenuJeu(); //présentation du menu principal
+
             string[,] tabJoueur = new string[10, 10]; //la matrice en 10 par 10 de la grille du joueur
             string[,] tabAdversaire = new string[10, 10];
 
@@ -20,10 +24,9 @@ namespace main
 
             int difficulte = -1;
 
-            difficulte = InitialisationGenerale(tabJoueur, tabAdversaire, sauvegardeEmplacementJoueur, sauvegardeEmplacementAdversaire);
+            difficulte = InitialisationGenerale(tabJoueur, tabAdversaire, sauvegardeEmplacementJoueur, sauvegardeEmplacementAdversaire, choix);
 
-
-
+            Console.Clear();
             Console.WriteLine("\n################");
             Console.WriteLine("# Début du jeu #");
             Console.WriteLine("################");
@@ -72,21 +75,77 @@ namespace main
          *  - optionnel : fonction qui lorsqu'appelée énumère les cases déjà visées ou mieux, les affiche sur une nouvelle grille
          * */
 
-
         //PARTIE INITIALISATION DU JEU ET DES DONNEES//
-        public static int InitialisationGenerale(string[,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire)
+        public static int MenuJeu()
+            //une simple présentation graphique du menu principal
         {
-            Console.Write("Initialiser dernière sauvegarde (O/N) ? "); char debutPartie = Convert.ToChar(Console.ReadLine());
+            Console.WriteLine("##################################################################################################");
+            Console.WriteLine("# ______       _        _ _ _        _   _                  _ _        _____       _             #");
+            Console.WriteLine("# | ___ \\     | |      (_) | |      | \\ | |                | | |      / ___ |     | |            #");
+            Console.WriteLine("# | |_/ / __ _| |_ __ _ _| | | ___  |  \\| | __ ___   ____ _| | | ___  \\ `--.  __ _| |_   _____   #");
+            Console.WriteLine("# | ___ \\/ _` | __/ _` | | | |/ _ \\ | . ` |/ _` \\ \\ / / _` | | |/ _ \\  `--. \\/ _` | \\ \\ / / _ \\  #");
+            Console.WriteLine("# | |_/ / (_| | || (_| | | | |  __/ | |\\  | (_| |\\ V / (_| | | |  __/ /\\__/ / (_| | |\\ V / (_) | #");
+            Console.WriteLine("# \\____/ \\__,_|\\__\\__,_|_|_|_|\\___| \\_| \\_/\\__,_| \\_/ \\__,_|_|_|\\___| \\____/ \\__,_|_| \\_/ \\___/  #");
+            Console.WriteLine("#                                                                                                #");
+            Console.WriteLine("##################################################################################################");
+
+            Console.Write("\n\n");
+
+            Console.WriteLine("Bienvenue dans le jeu de Bataille Navale Salvo !\n\nMenu du jeu :\n");
+
+            Console.WriteLine("1. Nouvelle Partie");
+            Console.WriteLine("2. Continuer Partie");
+            Console.WriteLine("3. Instructions");
+
+            int choix = -1;
+
+            do
+            {
+                Console.Write("\n:");
+                try
+                {
+                    choix = Convert.ToInt32(Console.ReadLine());
+                }
+                catch (FormatException)
+                {
+                    Console.WriteLine("Apparemment les try-catch vont devenir mes amis... Il faut écrire des chiffres !");
+                }
+                if ((choix != 1) && (choix != 2) && (choix != 3))
+                {
+                    choix = -1;
+                    Console.WriteLine("Seuls les chiffres du menu sont acceptés.");
+                }
+            } while (choix == -1);
+
+
+            if (choix == 3)
+            {
+                Console.Clear();
+                StreamReader file = new StreamReader("instructions.txt");
+
+                string ligne = "";
+                while ((ligne = file.ReadLine()) != null)
+                    Console.WriteLine(ligne);
+                Console.ReadKey();
+                Console.Clear();
+            }
+
+            return choix;
+
+        }
+
+        public static int InitialisationGenerale(string[,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire, int initPartie)
+        {
 
             int difficulte = -1;
 
-            if (debutPartie == 'O')
+            if (initPartie == 2) //si le choix au menu du jeu était 2, donc "Continuer Partie"
             {
                 difficulte = RecupererJeu(tabJoueur, tabAdversaire, sauvegardeEmplacementJoueur, sauvegardeEmplacementAdversaire);
                 return difficulte;
             }
 
-            else if (debutPartie == 'N')
+            else if (initPartie == 1) //si le choix au menu du jeu était 1, donc "Nouvelle Partie"
             {
                 //générer une grille pour l'adversaire et la sauvegarder
                 InitialiserGrilleRemplie(tabAdversaire, sauvegardeEmplacementAdversaire);
