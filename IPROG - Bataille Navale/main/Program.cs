@@ -29,24 +29,26 @@ namespace main
             Console.WriteLine("################");
 
             //joueur = 0, ia = 1
-            bool victoireJoueur = false, victoireAdversaire = false;
+            int victoireJoueur = -1, victoireAdversaire = -1;
 
-            while (!victoireJoueur && !victoireAdversaire)
+            while (victoireJoueur!=1 && victoireAdversaire!=1)
             {
                 /*ENSEIGNANT : décommentez la ligne suivante pour avoir accès à la grille
                  *  de l'adversaire avec les bateaux affichés */
                 //AfficherGrille(tabAdversaire);
 
                 AfficherPlateauDeJeu(tabJoueur, tabAdversaire);
-                Console.Write("Souhaitez-vous sauvegarder et quitter (O/N) ? "); string save = Console.ReadLine();
-                if (save == "O")
+
+                victoireJoueur = TourDeJeu(tabAdversaire, sauvegardeEmplacementAdversaire, 0, difficulte);
+                if (victoireJoueur == 2)
                 {
                     SauvegarderJeu(tabJoueur, tabAdversaire, sauvegardeEmplacementJoueur, sauvegardeEmplacementAdversaire, difficulte);
                     break;
                 }
-
-                victoireJoueur = TourDeJeu(tabAdversaire, sauvegardeEmplacementAdversaire, 0, difficulte);
-                if (victoireJoueur) break;
+                if (victoireJoueur == 1)
+                {
+                    break;
+                }
 
                 if (difficulte == 0)
                     victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 0);
@@ -54,8 +56,8 @@ namespace main
                     victoireAdversaire = TourDeJeu(tabJoueur, sauvegardeEmplacementJoueur, 1, 1);
             }
 
-            if (victoireJoueur) Console.WriteLine("\nLe joueur a gagné.....");
-            if (victoireAdversaire) Console.WriteLine("\nWOOOOOOOW l'ordinateur a vaincu le joueur !!!! Félicitation à ce prodige !");
+            if (victoireJoueur == 1) Console.WriteLine("\nLe joueur a gagné.....");
+            if (victoireAdversaire == 1) Console.WriteLine("\nWOOOOOOOW l'ordinateur a vaincu le joueur !!!! Félicitation à ce prodige !");
 
             Console.ReadKey();
 
@@ -409,7 +411,7 @@ namespace main
 
 
         //PARTIE JEU//
-        public static bool TourDeJeu(string[,] tabOpposant, int[,] sauvegardeEmplacement, int joueur, int difficulte)
+        public static int TourDeJeu(string[,] tabOpposant, int[,] sauvegardeEmplacement, int joueur, int difficulte)
         //joueur = 0, ia = 1
         {
 
@@ -439,6 +441,11 @@ namespace main
                 //colonne et ligne choisies
                 int[] caseVisee = ViserCase(coupsRestants, joueur, difficulte, bonCoupTourActuel);
                 bonCoupTourActuel[0] = -1; //on l'a utilisé une fois, on change sa valeur pour ne plus utiliser la variable
+
+                if (caseVisee[0] == -1) //si le joueur a entré la commande "P9" pendant la fonction ViserCase
+                {
+                    return 2;
+                }
 
                 //Attaque vers adversaire
                 //caractère de croix '><' à mettre quand on touche un morceau de bâteau.
@@ -522,6 +529,14 @@ namespace main
                 colonneVisee = caseVisee.Substring(0, 1); ligneVisee = caseVisee.Substring(1);
             }
 
+
+            if (colonneVisee == "P" && Convert.ToInt32(ligneVisee) == 9) //si le joueur a rentrer la commande "P9" et veut donc sauvegarder
+            {
+                int[] save = { -1, -1 };
+                return save; //on retourne un tableau identifiable dans la fonction parente
+            }
+
+
             //Conversion des entrées en valeurs utilisables pour interagir avec le tableau de l'opposant
             //Premier élément = ligne (décrémentation), Deuxième élément = colonne (conversion ASCII)
             int[] choix = { (Convert.ToInt32(ligneVisee) - 1), ((char)Convert.ToChar(colonneVisee) - 65) };
@@ -530,7 +545,7 @@ namespace main
 
         public static bool ColonneCorrectementNommee(string colonne)
         {
-            string[] lettres = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J" }; //liste des lettres acceptées
+            string[] lettres = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "P" }; //liste des lettres acceptées
 
             for (int i = 0; i < lettres.Length; i++)
             {
@@ -606,7 +621,7 @@ namespace main
             return compteurBateauxRestants;
         }
 
-        public static bool Gagner(string[,] tab)
+        public static int Gagner(string[,] tab)
         {
 
             for (int i = 0; i < 10; i++)
@@ -616,13 +631,13 @@ namespace main
                     if ((tab[i, j] != "  ") && (tab[i, j] != "><") && (tab[i, j] != "bc"))
                     {
                         //si en balayant le tableau on trouve une case bateau active (de type taille*11), ne gagne pas
-                        return false;
+                        return 0;
                     }
                 }
             }
 
             //si rien trouvé dans le bateau, gagne
-            return true;
+            return 1;
         }
 
         public static void SauvegarderJeu(string[,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire, int difficulte)
