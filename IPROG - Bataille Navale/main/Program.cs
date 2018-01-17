@@ -9,7 +9,7 @@ namespace main
         static void Main(string[] args)
         {
 
-            Console.SetWindowSize(114, 32); //peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
+            Console.SetWindowSize(100, 40); //peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
             int choix = 3;
             while (choix == 3)
                 choix = MenuJeu(); //présentation du menu principal
@@ -66,28 +66,19 @@ namespace main
 
         }
 
-        /* TO DO:
-         *  - améliorer le design et le déroulement de la partie une fois toutes les fonctions optionnelles implémentées
-         *  - modifier les références de ligne de code dans les commentaires quand TOUT le code est terminé
-         *  - optionnel : rajouter un mode 1vs1 avec deux joueurs irl
-         *  - optionnel : modifier le système des cases de string[,] à int[,] avec "XX" à X --> modifier affichage + fonctions
-         *  - optionnel : améliorer l'ia difficile
-         *  - optionnel : fonction qui lorsqu'appelée énumère les cases déjà visées ou mieux, les affiche sur une nouvelle grille
-         * */
-
         //PARTIE INITIALISATION DU JEU ET DES DONNEES//
         public static int MenuJeu()
         //une simple présentation graphique du menu principal
         {
-            Console.WriteLine("##################################################################################################");
-            Console.WriteLine("# ______       _        _ _ _        _   _                  _ _        _____       _             #");
-            Console.WriteLine("# | ___ \\     | |      (_) | |      | \\ | |                | | |      / ___ |     | |            #");
-            Console.WriteLine("# | |_/ / __ _| |_ __ _ _| | | ___  |  \\| | __ ___   ____ _| | | ___  \\ `--.  __ _| |_   _____   #");
-            Console.WriteLine("# | ___ \\/ _` | __/ _` | | | |/ _ \\ | . ` |/ _` \\ \\ / / _` | | |/ _ \\  `--. \\/ _` | \\ \\ / / _ \\  #");
-            Console.WriteLine("# | |_/ / (_| | || (_| | | | |  __/ | |\\  | (_| |\\ V / (_| | | |  __/ /\\__/ / (_| | |\\ V / (_) | #");
-            Console.WriteLine("# \\____/ \\__,_|\\__\\__,_|_|_|_|\\___| \\_| \\_/\\__,_| \\_/ \\__,_|_|_|\\___| \\____/ \\__,_|_| \\_/ \\___/  #");
-            Console.WriteLine("#                                                                                                #");
-            Console.WriteLine("##################################################################################################");
+            Console.WriteLine("\n ##################################################################################################");
+            Console.WriteLine(" # ______       _        _ _ _        _   _                  _ _        _____       _             #");
+            Console.WriteLine(" # | ___ \\     | |      (_) | |      | \\ | |                | | |      / ___ |     | |            #");
+            Console.WriteLine(" # | |_/ / __ _| |_ __ _ _| | | ___  |  \\| | __ ___   ____ _| | | ___  \\ `--.  __ _| |_   _____   #");
+            Console.WriteLine(" # | ___ \\/ _` | __/ _` | | | |/ _ \\ | . ` |/ _` \\ \\ / / _` | | |/ _ \\  `--. \\/ _` | \\ \\ / / _ \\  #");
+            Console.WriteLine(" # | |_/ / (_| | || (_| | | | |  __/ | |\\  | (_| |\\ V / (_| | | |  __/ /\\__/ / (_| | |\\ V / (_) | #");
+            Console.WriteLine(" # \\____/ \\__,_|\\__\\__,_|_|_|_|\\___| \\_| \\_/\\__,_| \\_/ \\__,_|_|_|\\___| \\____/ \\__,_|_| \\_/ \\___/  #");
+            Console.WriteLine(" #                                                                                                #");
+            Console.WriteLine(" ##################################################################################################");
 
             Console.Write("\n\n");
 
@@ -222,7 +213,7 @@ namespace main
                 {
                     if ((tab[i, j] == "  ") || (tab[i, j] == "><") || (tab[i, j] == "bc")) //affiche morceaux des bateaux touchés, mais pas les morceaux non touchés
                     {
-                        //bc est pour “bon coup” (cf fonction TourDeJeu, lignes 496 et 529)
+                        //bc est pour “bon coup” (cf fonction TourDeJeu, lignes 488 et 520)
                         if (tab[i, j] == "bc") { Console.Write("|><"); continue; } //on affiche “><” au lieu de “bc”, pour signaler au joueur que le bateau a été touché (“bc” sert à la programmation mais n’est pas présenté au joueur)
                         Console.Write("|" + tab[i, j]);
                     }
@@ -458,7 +449,7 @@ namespace main
         }
 
         public static int[,] SauvegarderEmplacement(int[] emplacement, int[,] sauvegarde, int rang)
-        //rang correspond aux 5 bateaux. Il augmente de 1 dès qu’un bateau est placé. Correspond au i de la fonction initialiserGrilleRemplie(cf ligne 301)
+        //rang correspond aux 5 bateaux. Il augmente de 1 dès qu’un bateau est placé. Correspond au i de la fonction initialiserGrilleRemplie(cf ligne 292)
         {
             for (int j = 0; j < 4; j++) //j correspond aux 4 informations contenues dans le tableau emplacement (ligne, colonne, orientation et taille)
             {
@@ -485,7 +476,7 @@ namespace main
                 for (int n = 0; n < 10; n++)
                 {
                     if (tabOpposant[m, n] == "bc")
-                    { //on récupère les coordonnées si on tombe sur la case bon coup
+                    { //on récupère les coordonnées du bon coup précédent si on tombe sur la case bon coup ("bc")
                         bonCoupTourActuel[0] = m;
                         bonCoupTourActuel[1] = n;
                         tabOpposant[m, n] = "><"; //on marque l'ancienne case bon coup avec la croix
@@ -550,15 +541,14 @@ namespace main
             //SI c'est le tour de l'IA au niveau difficile
             else if ((joueur == 1) && (difficulte == 1))
             {
-                if (bonCoup[0] == -1)
+                if (bonCoup[0] == -1) //s'il n'y a pas eu de bon coup au tour précédent
                 { int[] choixIA = { r.Next(0, 10), r.Next(0, 10) }; return choixIA; }
-                else
+                else //s'il y a eu un bon coup au tour précédent
                 {
                     int ligne = 0; int colonne = 0;
                     do
                     {
                         int orientation = r.Next(0, 4);
-                        //Console.WriteLine(bonCoup[0] + " - " + bonCoup[1] + " - " + orientation);
                         if (orientation == 0) //nord
                         { ligne = bonCoup[0] - 1; colonne = bonCoup[1]; }
                         else if (orientation == 1) //sud
