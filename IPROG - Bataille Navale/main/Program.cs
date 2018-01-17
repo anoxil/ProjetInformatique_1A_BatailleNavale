@@ -12,6 +12,7 @@ namespace main
         static void Main(string[] args)
         {
 
+            Console.SetWindowSize(114,32);//peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
             int choix = 3;
             while (choix == 3)
                 choix = MenuJeu(); //présentation du menu principal
@@ -31,13 +32,15 @@ namespace main
             Console.WriteLine("# Début du jeu #");
             Console.WriteLine("################");
 
+            Console.WriteLine("\nN'oubliez pas que vous pouvez sauvegarder et quitter à tout moment avec la commande P9 !");
+
             //joueur = 0, ia = 1
             int victoireJoueur = -1, victoireAdversaire = -1;
 
             while (victoireJoueur!=1 && victoireAdversaire!=1)
             {
-                /*ENSEIGNANT : décommentez la ligne suivante pour avoir accès à la grille
-                 *  de l'adversaire avec les bateaux affichés */
+                /*CHER(E) ENSEIGNANT(E) : décommentez la ligne suivante pour avoir accès à chaque tour
+                 *  à la grille de l'adversaire avec les bateaux affichés et pouvoir tricher :) */
                 //AfficherGrille(tabAdversaire);
 
                 AfficherPlateauDeJeu(tabJoueur, tabAdversaire);
@@ -121,10 +124,11 @@ namespace main
             if (choix == 3)
             {
                 Console.Clear();
-                StreamReader file = new StreamReader("instructions.txt");
+                StreamReader file = new StreamReader("instructions.txt", Encoding.GetEncoding("iso-8859-1"));
+                //norme iso-8859-1 pour faire apparaître les accents. pas de solution pour les apostrophes...
 
                 string ligne = "";
-                while ((ligne = file.ReadLine()) != null)
+                while ((ligne = file.ReadLine()) != null)//afficher chaque ligne tant qu'il en existe
                     Console.WriteLine(ligne);
                 Console.ReadKey();
                 Console.Clear();
