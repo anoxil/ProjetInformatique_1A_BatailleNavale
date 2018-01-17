@@ -9,7 +9,7 @@ namespace main
         static void Main(string[] args)
         {
 
-            Console.SetWindowSize(114, 32);//peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
+            Console.SetWindowSize(114, 32); //peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
             int choix = 3;
             while (choix == 3)
                 choix = MenuJeu(); //présentation du menu principal
