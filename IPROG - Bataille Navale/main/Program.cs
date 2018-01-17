@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace main
 {
@@ -12,7 +9,7 @@ namespace main
         static void Main(string[] args)
         {
 
-            Console.SetWindowSize(114,32);//peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
+            Console.SetWindowSize(114, 32);//peut poser problème selon l'OS. à commenter/modifier manuellement la taille de l'écran selon besoin.
             int choix = 3;
             while (choix == 3)
                 choix = MenuJeu(); //présentation du menu principal
@@ -37,7 +34,7 @@ namespace main
             //joueur = 0, ia = 1
             int victoireJoueur = -1, victoireAdversaire = -1;
 
-            while (victoireJoueur!=1 && victoireAdversaire!=1)
+            while (victoireJoueur != 1 && victoireAdversaire != 1)
             {
                 /*CHER(E) ENSEIGNANT(E) : décommentez la ligne suivante pour avoir accès à chaque tour
                  *  à la grille de l'adversaire avec les bateaux affichés et pouvoir tricher :) */
@@ -80,7 +77,7 @@ namespace main
 
         //PARTIE INITIALISATION DU JEU ET DES DONNEES//
         public static int MenuJeu()
-            //une simple présentation graphique du menu principal
+        //une simple présentation graphique du menu principal
         {
             Console.WriteLine("##################################################################################################");
             Console.WriteLine("# ______       _        _ _ _        _   _                  _ _        _____       _             #");
@@ -225,7 +222,7 @@ namespace main
                 {
                     if ((tab[i, j] == "  ") || (tab[i, j] == "><") || (tab[i, j] == "bc")) //affiche morceaux des bateaux touchés, mais pas les morceaux non touchés
                     {
-                        //bc est pour “bon coup” (cf fonction tourDeJeu, ligne XXXXX)
+                        //bc est pour “bon coup” (cf fonction TourDeJeu, lignes 496 et 529)
                         if (tab[i, j] == "bc") { Console.Write("|><"); continue; } //on affiche “><” au lieu de “bc”, pour signaler au joueur que le bateau a été touché (“bc” sert à la programmation mais n’est pas présenté au joueur)
                         Console.Write("|" + tab[i, j]);
                     }
@@ -461,7 +458,7 @@ namespace main
         }
 
         public static int[,] SauvegarderEmplacement(int[] emplacement, int[,] sauvegarde, int rang)
-        //rang correspond aux 5 bateaux. Il augmente de 1 dès qu’un bateau est placé. Correspond au i de la fonction initialiserGrilleRemplie(cf ligne XXXXXX)
+        //rang correspond aux 5 bateaux. Il augmente de 1 dès qu’un bateau est placé. Correspond au i de la fonction initialiserGrilleRemplie(cf ligne 301)
         {
             for (int j = 0; j < 4; j++) //j correspond aux 4 informations contenues dans le tableau emplacement (ligne, colonne, orientation et taille)
             {
@@ -753,7 +750,7 @@ namespace main
         public static int RecupererJeu(string[,] tabJoueur, string[,] tabAdversaire, int[,] sauvegardeEmplacementJoueur, int[,] sauvegardeEmplacementAdversaire)
         //pour récupérer les données sauvegardées
         {
-            StreamReader sr = new StreamReader("data_save.txt"); //on lit le document .txt créé et rempli dans sauvegarderJeu (cf ligne XXXXXX). Il faut les récupérer dans l’ordre dans lequel elles ont été entrées
+            StreamReader sr = new StreamReader("data_save.txt"); //on lit le document .txt créé et rempli dans sauvegarderJeu. Il faut les récupérer dans l’ordre dans lequel elles ont été entrées
 
             //récup tabJoueur
             for (int ligneJ = 0; ligneJ < 10; ligneJ++)
